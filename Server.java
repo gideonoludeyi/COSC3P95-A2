@@ -25,8 +25,6 @@ public class Server implements Runnable {
       }
     } catch (Exception e) {
       e.printStackTrace();
-    } finally {
-      System.out.println("Closed");
     }
   }
 
@@ -34,14 +32,28 @@ public class Server implements Runnable {
     try (client) {
       InputStream in = client.getInputStream();
 
-      int namesize = ByteBuffer.wrap(in.readNBytes(Integer.BYTES))
+      int nfiles = ByteBuffer.wrap(in.readNBytes(Integer.BYTES))
           .getInt();
-      String filename = new String(in.readNBytes(namesize), StandardCharsets.UTF_8);
 
-      String filepath = outdir.resolve(filename).toString();
-      try (FileOutputStream out = new FileOutputStream(filepath)) {
-        long contentsize = in.transferTo(out);
-        System.out.printf("Wrote %s bytes to %s%n", contentsize, filepath);
+      for (int i = 0; i < nfiles; i++) {
+        int namesize = ByteBuffer.wrap(in.readNBytes(Integer.BYTES))
+            .getInt();
+
+        String filename = new String(in.readNBytes(namesize), StandardCharsets.UTF_8);
+
+        long contentsize = ByteBuffer.wrap(in.readNBytes(Long.BYTES))
+            .getLong();
+
+        Path filepath = outdir.resolve(filename);
+        try (FileOutputStream out = new FileOutputStream(filepath.toString())) {
+          long bytesremaining = contentsize;
+          while (bytesremaining > 0) {
+            byte[] buf = in.readNBytes(Math.min(1024, (int) bytesremaining));
+            out.write(buf);
+            bytesremaining -= buf.length;
+          }
+          System.out.printf("Wrote %s bytes to %s%n", contentsize, filepath);
+        }
       }
     } catch (Exception e) {
       e.printStackTrace();
