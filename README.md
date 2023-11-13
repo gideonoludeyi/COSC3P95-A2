@@ -1,6 +1,7 @@
 # A2 - COSC 3P95
 
 ## Usage
+#### Server
 1. Download [`opentelemetry-javaagent.jar`](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar) into `lib/` directory
 2. Compile `Server.java`
 ```sh
@@ -18,3 +19,15 @@ $ java -javaagent:lib/opentelemetry-javaagent.jar \
     -Dotel.javaagent.debug=true \
     -jar server.jar
 ```
+
+#### Client
+1. Compile `Client.java`
+```sh
+$ javac Client.java
+```
+
+2. Run client
+```sh
+$ java Client 9090 /path/to/folder
+```
+
