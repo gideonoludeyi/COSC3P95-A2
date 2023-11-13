@@ -60,8 +60,8 @@ public class Server implements Runnable {
     }
   }
 
-  public static void main(String[] args) {
-    Path outdir = Paths.get("tmp");
+  public static void main(String[] args) throws IOException {
+    Path outdir = Files.createDirectories(Paths.get("tmp"));
 
     Server server = new Server(9090, outdir);
     server.run();
