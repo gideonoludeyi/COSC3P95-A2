@@ -4,6 +4,7 @@ import java.nio.file.*;
 import java.nio.charset.*;
 import java.nio.*;
 import java.util.concurrent.*;
+import java.util.zip.*;
 
 public class Server implements Runnable {
   private final ForkJoinPool pool = ForkJoinPool.commonPool();
@@ -23,14 +24,14 @@ public class Server implements Runnable {
         Socket client = socket.accept();
         pool.execute(() -> process(client));
       }
-    } catch (Exception e) {
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }
 
   private void process(Socket client) {
-    try (client) {
-      InputStream in = client.getInputStream();
+    try (client;
+        InputStream in = new GZIPInputStream(client.getInputStream())) {
 
       int nfiles = ByteBuffer.wrap(in.readNBytes(Integer.BYTES))
           .getInt();
@@ -45,7 +46,7 @@ public class Server implements Runnable {
             .getLong();
 
         Path filepath = outdir.resolve(filename);
-        try (FileOutputStream out = new FileOutputStream(filepath.toString())) {
+        try (OutputStream out = new FileOutputStream(filepath.toString())) {
           long bytesremaining = contentsize;
           while (bytesremaining > 0) {
             byte[] buf = in.readNBytes(Math.min(1024, (int) bytesremaining));
@@ -55,7 +56,7 @@ public class Server implements Runnable {
           System.out.printf("Wrote %s bytes to %s%n", contentsize, filepath);
         }
       }
-    } catch (Exception e) {
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }

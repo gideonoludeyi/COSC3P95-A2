@@ -4,6 +4,7 @@ import java.nio.file.*;
 import java.nio.charset.*;
 import java.nio.*;
 import java.util.*;
+import java.util.zip.*;
 
 public class Client implements Runnable {
   private final String ip;
@@ -18,16 +19,20 @@ public class Client implements Runnable {
 
   @Override
   public void run() {
-    try (Socket socket = new Socket(ip, port);
-        DirectoryStream<Path> dir = Files.newDirectoryStream(dirpath)) {
-      OutputStream out = socket.getOutputStream();
-
-      List<Path> filepaths = new ArrayList<>();
+    List<Path> filepaths = new ArrayList<>();
+    try (DirectoryStream<Path> dir = Files.newDirectoryStream(dirpath)) {
       for (Path path : dir) {
         if (!Files.isDirectory(path)) {
           filepaths.add(path);
         }
       }
+    } catch (IOException e) {
+      e.printStackTrace();
+      return;
+    }
+
+    try (Socket socket = new Socket(ip, port);
+        OutputStream out = new GZIPOutputStream(socket.getOutputStream())) {
 
       byte[] nfiles = ByteBuffer.allocate(Integer.BYTES)
           .putInt(filepaths.size())
@@ -55,8 +60,7 @@ public class Client implements Runnable {
         out.write(contentsize);
         out.write(content);
       }
-
-    } catch (Exception e) {
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }
