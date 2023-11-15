@@ -28,6 +28,6 @@ $ javac Client.java
 
 2. Run client
 ```sh
-$ java Client 9090 /path/to/folder
+$ java Client 9090 ./files
 ```
 
