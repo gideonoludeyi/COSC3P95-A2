@@ -31,7 +31,7 @@ public class Server implements Runnable {
 
   private void process(Socket client) {
     try (client;
-        InputStream in = new GZIPInputStream(client.getInputStream())) {
+        InputStream in = inputStream(client)) {
 
       int nfiles = ByteBuffer.wrap(in.readNBytes(Integer.BYTES))
           .getInt();
@@ -59,6 +59,13 @@ public class Server implements Runnable {
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  private InputStream inputStream(Socket client) throws IOException {
+    InputStream in = client.getInputStream();
+    in = new GZIPInputStream(in); // Compression
+
+    return in;
   }
 
   public static void main(String[] args) throws IOException {

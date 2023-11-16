@@ -32,7 +32,7 @@ public class Client implements Runnable {
     }
 
     try (Socket socket = new Socket(ip, port);
-        OutputStream out = new GZIPOutputStream(socket.getOutputStream())) {
+        OutputStream out = outputStream(socket)) {
 
       byte[] nfiles = ByteBuffer.allocate(Integer.BYTES)
           .putInt(filepaths.size())
@@ -63,6 +63,13 @@ public class Client implements Runnable {
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  private OutputStream outputStream(Socket socket) throws IOException {
+    OutputStream out = socket.getOutputStream();
+    out = new GZIPOutputStream(out); // Compression
+
+    return out;
   }
 
   public static void main(String[] args) throws IOException {
