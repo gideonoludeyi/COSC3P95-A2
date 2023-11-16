@@ -1,20 +1,25 @@
 import java.net.*;
 import java.io.*;
 import java.nio.file.*;
+import java.security.GeneralSecurityException;
 import java.nio.charset.*;
 import java.nio.*;
 import java.util.*;
 import java.util.zip.*;
+import javax.crypto.*;
+import javax.crypto.spec.SecretKeySpec;
 
 public class Client implements Runnable {
   private final String ip;
   private final int port;
   private final Path dirpath;
+  private final Cipher cipher;
 
-  public Client(String ip, int port, Path dirpath) {
+  public Client(String ip, int port, Path dirpath, Cipher cipher) {
     this.ip = ip;
     this.port = port;
     this.dirpath = dirpath;
+    this.cipher = cipher;
   }
 
   @Override
@@ -68,16 +73,22 @@ public class Client implements Runnable {
   private OutputStream outputStream(Socket socket) throws IOException {
     OutputStream out = socket.getOutputStream();
     out = new GZIPOutputStream(out); // Compression
+    out = new CipherOutputStream(out, cipher); // Encryption
 
     return out;
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException, GeneralSecurityException {
     int port = Integer.parseUnsignedInt(args[0]);
 
     Path dirpath = Paths.get(args[1]);
 
-    Client client = new Client("localhost", port, dirpath);
+    String encodedKey = Files.readString(Paths.get("key.txt"));
+    SecretKey key = new SecretKeySpec(Base64.getDecoder().decode(encodedKey), "AES");
+    Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+    cipher.init(Cipher.ENCRYPT_MODE, key);
+
+    Client client = new Client("localhost", port, dirpath, cipher);
     client.run();
   }
 }
