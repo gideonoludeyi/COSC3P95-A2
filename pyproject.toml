@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "assign02"
+version = "0.1.0"
+description = ""
+authors = ["gideonoludeyi <49620086+gideonoludeyi@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+client = "assign02.client:main"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.24.0.post1"}
+python-multipart = "^0.0.6"
+requests = "^2.31.0"
+opentelemetry-distro = "^0.42b0"
+opentelemetry-exporter-otlp = "^1.21.0"
+
+
+[tool.poetry.group.dev.dependencies]
+autopep8 = "^2.0.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
