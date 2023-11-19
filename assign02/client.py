@@ -1,11 +1,9 @@
 import sys
 import os
-import shutil
 import argparse
 import secrets
 import pathlib
 import tempfile
-import gzip
 import zipfile
 import base64
 
