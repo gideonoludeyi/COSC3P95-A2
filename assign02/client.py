@@ -6,30 +6,30 @@ import pathlib
 import tempfile
 import zipfile
 import base64
-
 import requests
+import time
 
 parser = argparse.ArgumentParser(prog="Client")
 
 parser.add_argument(
-  "--host",
-  dest="host",
-  type=str,
-  default="localhost",
+    "--host",
+    dest="host",
+    type=str,
+    default="localhost",
 )
 
 parser.add_argument(
-  "--port",
-  dest="port",
-  type=int,
-  default=8000,
+    "--port",
+    dest="port",
+    type=int,
+    default=8000,
 )
 
 parser.add_argument(
-  "-d", "--dir",
-  dest="dir",
-  type=pathlib.Path,
-  default=pathlib.Path.cwd().joinpath("files")
+    "-d", "--dir",
+    dest="dir",
+    type=pathlib.Path,
+    default=pathlib.Path.cwd().joinpath("files")
 )
 
 def main() -> int:
@@ -40,8 +40,7 @@ def main() -> int:
     fname = f'tmp-{secrets.token_hex(4)}.zip'
 
     try:
-        with zipfile.ZipFile(fname, mode="w", # Compression
-                    compression=zipfile.ZIP_DEFLATED) as zf:
+        with zipfile.ZipFile(fname, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
             for fp in dir.iterdir():
                 zf.write(fp, arcname=fp.name)
 
@@ -49,10 +48,14 @@ def main() -> int:
             tempfile.TemporaryFile() as tf,
             open(fname, "rb") as f
         ):
-            base64.encode(f, tf) # Encryption
+            base64.encode(f, tf)  # Encryption
             tf.seek(0)
-            response = requests.post(f"http://{args.host}:{args.port}/upload",
-                                files=dict(file=tf))
+
+            # Deliberate delay in 30% of cases
+            if secrets.randbelow(10) < 3:  # 30% chance to trigger the delay
+                time.sleep(3)  # Simulate a delay of 3 seconds
+
+            response = requests.post(f"http://{args.host}:{args.port}/upload", files=dict(file=tf))
     finally:
         os.unlink(fname)
 
