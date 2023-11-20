@@ -58,4 +58,4 @@ $ poetry run client
 
 ## OpenTelemetry Exporter Data
 
-The `otel_datafiles` directory contains the OpenTelemetry data exported to Jaeger for each combination of advanced features.
+The `otel_datafiles` directory contains the OpenTelemetry data exported to Jaeger for each combination of advanced features in `json` format. The associated screenshots of the same name display the visualizations for the traces.
