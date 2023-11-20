@@ -37,7 +37,7 @@ $ docker run -d --name jaeger-0 \
 4. Run the server with auto-instrumentation
 
 ```sh
-$ opentelemetry-instrument uvicorn assign02:app
+$ poetry run opentelemetry-instrument uvicorn assign02:app
 ```
 
 #### Cleanup
