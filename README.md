@@ -55,3 +55,7 @@ $ docker rm -f jaeger-0
 ```sh
 $ poetry run client
 ```
+
+## OpenTelemetry Exporter Data
+
+The `otel_datafiles` directory contains the OpenTelemetry data exported to Jaeger for each combination of advanced features.

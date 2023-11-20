@@ -7,7 +7,7 @@ import tempfile
 import zipfile
 import base64
 import requests
-import time
+import concurrent.futures
 
 parser = argparse.ArgumentParser(prog="Client")
 
@@ -32,17 +32,12 @@ parser.add_argument(
     default=pathlib.Path.cwd().joinpath("files")
 )
 
-def main() -> int:
-    args = parser.parse_args()
-
-    dir: pathlib.Path = args.dir
-
+def upload(fp: pathlib.Path, host:str, port:int) -> None:
     fname = f'tmp-{secrets.token_hex(4)}.zip'
 
     try:
         with zipfile.ZipFile(fname, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-            for fp in dir.iterdir():
-                zf.write(fp, arcname=fp.name)
+            zf.write(fp, arcname=fp.name)
 
         with (
             tempfile.TemporaryFile() as tf,
@@ -51,11 +46,7 @@ def main() -> int:
             base64.encode(f, tf)  # Encryption
             tf.seek(0)
 
-            # Deliberate delay in 30% of cases
-            if secrets.randbelow(10) < 3:  # 30% chance to trigger the delay
-                time.sleep(3)  # Simulate a delay of 3 seconds
-
-            response = requests.post(f"http://{args.host}:{args.port}/upload", files=dict(file=tf))
+            response = requests.post(f"http://{host}:{port}/upload", files=dict(file=tf))
     finally:
         os.unlink(fname)
 
@@ -64,6 +55,16 @@ def main() -> int:
         return -1
 
     print(response.content.decode())
+
+def main() -> int:
+    args = parser.parse_args()
+
+    dir: pathlib.Path = args.dir
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        for fp in dir.iterdir():
+            print(f'Uploading {fp.name}')
+            executor.submit(upload, fp, host=args.host, port=args.port)
 
     return 0
 
